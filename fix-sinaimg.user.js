@@ -1,101 +1,42 @@
 // ==UserScript==
-// @name              修复微博图片跨域展示
-// @namespace         https://github.com/itorr/fix-sinaimg.user.js
-// @version           0.11
+// @name              修复 P9 的新浪图床跨域问题
+// @namespace         https://github.com/ctgnauh/p9-sinaimg-fixer.user.js
+// @version           0.1
 // @description       修复微博图片在第三方网站上无法正常显示的问题
-// @author            itorr
+// @author            itorr, ctgnauh
 // @license           MIT
-// @match             *://*/*
-// @exclude           *://weibo.com/*
-// @exclude           *://*.weibo.com/*
-// @exclude           *://t.cn/*
-// @icon              https://weibo.com/favicon.ico
+// @match             https://psnine.com/*
+// @icon              https://psnine.com/favicon.ico
 // @run-at            document-end
 // @grant             GM_xmlhttpRequest
-// @supportURL        https://github.com/itorr/fix-sinaimg.user.js/issues
+// @supportURL        https://github.com/ctgnauh/p9-sinaimg-fixer.user.js/issues
 // ==/UserScript==
 
-const blobUrlSet = new Set();
-const isSinaImageRegex = /^https?:\/\/([^/]+\.|)sinaimg\.cn\//;
+(function() {
+    'use strict';
 
-const fixSinaImages = () => {
-    [...document.images].forEach(fixSinaImage);
-};
-const fixSinaImage = el => {
-    if (!isSinaImageRegex.test(el.src)) return;
-    GM_xmlhttpRequest({
-        method: 'GET',
-        url: el.src,
-        responseType: 'blob',
-        headers: {
-            referer: 'https://weibo.com/mygroups',
-        },
-        onload(res) {
-            const url = URL.createObjectURL(res.response);
-            blobUrlSet.add(url);
-            el.src = url;
-        },
-    });
-    el.removeAttribute('src');
-};
+    const isSinaImageRegex = /^https?:\/\/([^/]+\.|)sinaimg\.cn\//;
 
-const fixSinaImagesForObserver = mutationList => {
-    mutationList.forEach(({ type, target, attributeName, oldValue, addedNodes, removedNodes }) => {
-        // 有节点新增时，处理 url，不用去完整遍历 document.images
-        if (addedNodes.length) {
-            addedNodes.forEach(node => {
-                if (!(node instanceof Element)) return;
-                // 节点本身是 img
-                if (node.tagName === 'IMG') {
-                    fixSinaImage(node);
-                    return;
-                }
-                // 子节点有 img
-                node.querySelectorAll('img').forEach(fixSinaImage);
-            });
-        }
-        // 有节点被删除时，释放 blob url
-        if (removedNodes.length) {
-            removedNodes.forEach(node => {
-                if (!(node instanceof Element)) return;
-                // 节点本身是 img
-                if (node.tagName === 'IMG') {
-                    revokeBlobUrlFromImage(node);
-                    return;
-                }
-                // 子节点有 img
-                node.querySelectorAll('img').forEach(revokeBlobUrlFromImage);
-            });
-        }
-        // 当 src 被修改时
-        if (type === 'attributes' && attributeName === 'src') {
-            // 旧 src 是 blob url，需要释放
-            if (blobUrlSet.has(oldValue)) revokeBlobUrl(oldValue);
-            // 处理新 src
-            fixSinaImage(target);
-        }
-    });
-};
+    const fixSinaImages = () => {
+        document.querySelectorAll('.imgclick').forEach(fixSinaImage);
+    };
 
-const revokeBlobUrlFromImage = img => {
-    if (!blobUrlSet.has(img.src)) return;
-    revokeBlobUrl(img.url);
-};
-const revokeBlobUrl = url => {
-    URL.revokeObjectURL(url);
-    blobUrlSet.delete(url);
-};
+    const fixSinaImage = el => {
+        if (!isSinaImageRegex.test(el.src)) return;
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: el.src,
+            responseType: 'blob',
+            headers: {
+                referer: 'https://weibo.com/mygroups',
+            },
+            onload(res) {
+                const url = URL.createObjectURL(res.response);
+                el.src = url;
+            },
+        });
+        el.removeAttribute('src');
+    };
 
-if (window.MutationObserver) {
-    new MutationObserver(fixSinaImagesForObserver).observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeOldValue: true,
-        attributeFilter: ['src'],
-    });
-} else {
-    document.addEventListener('DOMNodeInserted', fixSinaImages);
-}
-
-window.addEventListener('load', fixSinaImages);
+    fixSinaImages();
+})();
