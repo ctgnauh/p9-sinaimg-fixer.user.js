@@ -1,20 +1,11 @@
-# 修复微博图片跨域展示用户脚本
+# 修复 P9 的新浪图床跨域问题
 
-本脚本可修复微博图片在第三方网站上无法正常显示的问题
-
-目前在新版本浏览器下会尽量减少发送会403的图片请求，单页应用下也能正常工作🤒 有问题欢迎 [反馈](https://github.com/itorr/fix-sinaimg.user.js/issues)
+修改自 [itorr/fix-sinaimg.user.js](https://github.com/itorr/fix-sinaimg.user.js/)
 
 ## 安装脚本
-https://greasyfork.org/scripts/462883/code/fix-sinaimg.user.js
 
-## Greasy Fork
-https://greasyfork.org/scripts/462883
+点击[这里](https://github.com/ctgnauh/p9-sinaimg-fixer.user.js/raw/main/fix-sinaimg.user.js) 安装。
 
-## 问题反馈
-https://github.com/itorr/fix-sinaimg.user.js/issues
+## 注意事项
 
-## Github
-https://github.com/itorr/fix-sinaimg.user.js
-
-## bangumi 讨论
-https://bangumi.tv/group/topic/379742
+使用中遇到提示 `一个用户脚本试图访问跨源资源` 时，请**不要恐慌**，选择 `总是允许此域名` 即可。
